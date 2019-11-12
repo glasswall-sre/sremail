@@ -27,6 +27,11 @@ class Address:
     def __repr__(self):
         return f"address.Address(\"{str(self)}\")"
 
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self.name == other.name and self.email == other.email
+        return False
+
 
 class AddressField(fields.String):
     default_error_messages = {"invalid_address": "Not a valid address."}
