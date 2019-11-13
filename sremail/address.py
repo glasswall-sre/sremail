@@ -13,6 +13,14 @@ class Address:
         email (str): The email address.
     """
     def __init__(self, addr_str: str) -> None:
+        """Create a new address from a string.
+
+        Args:
+            addr_str (str): The address. Can be "email@test.com", or "Firstname Lastname <email@test.com>"
+
+        Raises:
+            ValueError: If addr_str was in an incorrect format.
+        """
         self.name, self.email = parseaddr(addr_str)
 
         if not self.name and not self.email:
@@ -34,6 +42,7 @@ class Address:
 
 
 class AddressField(fields.String):
+    """A marshmallow field for de/serialisation of Address objects."""
     default_error_messages = {"invalid_address": "Not a valid address."}
 
     def _validated(self, value) -> Optional[Address]:

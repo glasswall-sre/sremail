@@ -1,5 +1,3 @@
-import builtins
-import contextlib
 from contextlib import nullcontext as does_not_raise
 from datetime import datetime
 import email
@@ -9,24 +7,6 @@ from typing import Dict, List
 import pytest
 
 from sremail.message import Message, MIMEApplication
-
-
-@pytest.fixture
-def mock_open(monkeypatch):
-    """Fixture used to mock open() to make sure tests don't write to the
-    host filesystem."""
-    files = {}
-
-    @contextlib.contextmanager
-    def mocked_open(filename, *args, **kwargs):
-        file = io.StringIO(files.get(filename, ""))
-        try:
-            yield file
-        finally:
-            files[filename] = file.getvalue()
-            file.close()
-
-    monkeypatch.setattr(builtins, "open", mocked_open)
 
 
 def create_message(headers: Dict[str, object],
@@ -60,7 +40,6 @@ def create_message(headers: Dict[str, object],
 def test_create_message(headers, expected, raises):
     with raises:
         result = Message(**headers)
-        print(result.__dict__)
         assert result == expected
 
 
@@ -83,8 +62,8 @@ def test_message_attach(mock_open):
     result = msg.attachments[0]
 
     assert result.get_content_type() == expected.get_content_type()
-    assert result.get_content_disposition(
-    ) == expected.get_content_disposition()
+    assert result.get_content_disposition() == \
+        expected.get_content_disposition()
     assert result.get_payload() == expected.get_payload()
 
 
@@ -121,8 +100,14 @@ VEVYVA==
     result = msg.as_mime()
     result.set_boundary(boundary)
 
-    print(result)
-
     expected = email.message_from_string(expected_str)
 
     assert dict(result) == dict(expected)
+    result_payload = result.get_payload()[0]
+    expected_payload = expected.get_payload()[0]
+    assert result_payload.get_payload() == \
+        expected_payload.get_payload()
+    assert result_payload.get_content_type() == \
+        expected_payload.get_content_type()
+    assert result_payload.get_content_disposition() == \
+        expected_payload.get_content_disposition()
