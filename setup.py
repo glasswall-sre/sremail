@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 setup(
     dependency_links=[],
-    install_requires=[],
+    install_requires=["marshmallow==3.2.2"],
     name="sremail",
     version="0.1.0",
     description=
