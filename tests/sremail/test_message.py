@@ -43,6 +43,24 @@ def test_create_message(headers, expected, raises):
         assert result == expected
 
 
+def test_create_message_unknown_headers():
+    result = Message(to=["test@email.com"],
+                     from_addresses=["a@b.com"],
+                     date=datetime.now(),
+                     unknown_header="test")
+    mime_result = result.as_mime()
+    assert mime_result["Unknown-Header"] == "test"
+
+
+def test_add_header():
+    result = Message(to=["test@email.com"],
+                     from_addresses=["a@b.com"],
+                     date=datetime.now())
+    result.headers["X-FileTrust-Tenant"] = "test"
+    mime_result = result.as_mime()
+    assert mime_result["X-FileTrust-Tenant"] == "test"
+
+
 def test_message_attach(mock_open):
     # write a test file to try to attach
     with open("attachment.txt", "w") as test_attachment:

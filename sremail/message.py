@@ -8,7 +8,8 @@ from email.mime.multipart import MIMEMultipart
 from os import path
 from typing import List
 
-from marshmallow import Schema, fields, validates_schema, ValidationError, INCLUDE
+from marshmallow import Schema, fields, validates_schema, post_dump, pre_dump,\
+    ValidationError, INCLUDE
 
 from .address import Address, AddressField
 
@@ -35,6 +36,10 @@ class MessageHeadersSchema(Schema):
     cc = fields.List(AddressField())
     bcc = fields.List(AddressField())
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.cached_unknown_fields = {}
+
     class Meta:
         # a bit of a hack... as 'from' is a python keyword, we need to declare
         # the from field here and alias it to attribute 'from_addresses'
@@ -46,6 +51,7 @@ class MessageHeadersSchema(Schema):
                         required=True,
                         attribute="from_addresses")
         }
+        unknown = INCLUDE
 
     def on_bind_field(self, field_name, field_obj):
         """Convert data keys from snake_case to Mime-Header format."""
@@ -56,6 +62,26 @@ class MessageHeadersSchema(Schema):
         """Used for validating fields against each other."""
         if not data.get("to") and not data.get("bcc"):
             raise ValidationError("One of 'to', or 'bcc' must be supplied")
+
+    @pre_dump()
+    def cache_unknown_fields(self, data, **kwargs):
+        """Cache any fields that were unknown, so we can dump them later on."""
+        field_names = [
+            field.attribute or field.name for field in self.fields.values()
+        ]
+        self.cached_unknown_fields.clear()
+        for k, v in data.items():
+            if k not in field_names:
+                self.cached_unknown_fields[k] = v
+        return data
+
+    @post_dump()
+    def dump_unknown_fields(self, data, **kwargs):
+        """Add the unknown fields to the dumped output."""
+        for k, v in self.cached_unknown_fields.items():
+            new_key = mime_headerize(k)
+            data[new_key] = v
+        return data
 
 
 MESSAGE_HEADERS_SCHEMA = MessageHeadersSchema(unknown=INCLUDE)
