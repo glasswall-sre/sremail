@@ -7,7 +7,7 @@ resources:
     name: Glasswall.Pipelines.Templates
   - repository: this
     type: git
-    name: $(Build.Repository.Name)
+    name: Glasswall.SRE.Common.Email
     trigger:
       branches:
       - master
