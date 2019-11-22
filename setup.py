@@ -9,9 +9,9 @@ from setuptools import setup, find_packages
 
 setup(
     dependency_links=[],
-    install_requires=["marshmallow==3.2.2"],
+    install_requires=["marshmallow"],
     name="sremail",
-    version="0.1.0",
+    version="0.1.1",
     description=
     "Python package to make it easier to send mail to SaaS clusters",
     author="Sam Gibson",
