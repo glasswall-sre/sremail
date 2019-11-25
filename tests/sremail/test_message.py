@@ -29,7 +29,7 @@ def create_message(headers: Dict[str, object],
           {
               "To": ["test@email.com"],
               "From": ["person@place.com"],
-              "Date": "2019-11-12T15:24:28+00:00"
+              "Date": "Tue, 12 Nov 2019 15:24:28 +0000"
           }, []), does_not_raise()),
      ({
          "from_addresses": ["person@place.com"],
@@ -43,6 +43,7 @@ def test_create_message(headers, expected, raises):
         assert result == expected
 
 
+<<<<<<< Updated upstream
 def test_create_message_unknown_headers():
     result = Message(to=["test@email.com"],
                      from_addresses=["a@b.com"],
@@ -59,6 +60,19 @@ def test_add_header():
     result.headers["X-FileTrust-Tenant"] = "test"
     mime_result = result.as_mime()
     assert mime_result["X-FileTrust-Tenant"] == "test"
+=======
+def test_with_headers():
+    result = Message.with_headers({
+        "To": ["sgibson@glasswallsolutions.com"],
+        "Date": "Mon, 25th Nov 2019 14:59:32 UTC +00:00",
+        "From": ["sgibson@glasswallsolutions.com"]
+    })
+    assert result.headers == {
+        "To": ["sgibson@glasswallsolutions.com"],
+        "Date": "Mon, 25th Nov 2019 14:59:32 UTC +00:00",
+        "From": ["sgibson@glasswallsolutions.com"]
+    }
+>>>>>>> Stashed changes
 
 
 def test_message_attach(mock_open):
@@ -92,8 +106,9 @@ def test_as_mime(mock_open):
 
     msg = Message(to=["test@email.com"],
                   from_addresses=["test@email.com"],
-                  date=datetime.strptime("2019-11-12T16:48:25.773537",
-                                         "%Y-%m-%dT%H:%M:%S.%f"))
+                  date=email.utils.format_datetime(
+                      datetime.strptime("2019-11-12T15:24:28+00:00",
+                                        "%Y-%m-%dT%H:%M:%S%z")))
     msg.attach("attachment.txt")
 
     # we need to set a boundary for the MIME message as it's not
@@ -101,7 +116,7 @@ def test_as_mime(mock_open):
     boundary = "===============8171060537750829823=="
     expected_str = f"""Content-Type: multipart/mixed; boundary="{boundary}"
 MIME-Version: 1.0
-Date: 2019-11-12T16:48:25.773537
+Date: Tue, 12 Nov 2019 15:24:28 +0000
 To: test@email.com
 From: test@email.com
 
