@@ -37,7 +37,7 @@ class Address:
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self.name == other.name and self.email == other.email
+            return self.email == other.email
         return False
 
 

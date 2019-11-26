@@ -6,7 +6,7 @@ from typing import Dict, List
 
 import pytest
 
-from sremail.message import Message, MIMEApplication
+from sremail.message import Message, MIMEApplication, MIMEText
 
 
 def create_message(headers: Dict[str, object],
@@ -29,7 +29,7 @@ def create_message(headers: Dict[str, object],
           {
               "To": ["test@email.com"],
               "From": ["person@place.com"],
-              "Date": "2019-11-12T15:24:28+00:00"
+              "Date": "Tue, 12 Nov 2019 15:24:28 +0000"
           }, []), does_not_raise()),
      ({
          "from_addresses": ["person@place.com"],
@@ -61,6 +61,19 @@ def test_add_header():
     assert mime_result["X-FileTrust-Tenant"] == "test"
 
 
+def test_with_headers():
+    result = Message.with_headers({
+        "To": ["sgibson@glasswallsolutions.com"],
+        "Date": "Mon, 25th Nov 2019 14:59:32 UTC +0000",
+        "From": ["sgibson@glasswallsolutions.com"]
+    })
+    assert result.headers == {
+        "To": ["sgibson@glasswallsolutions.com"],
+        "Date": "Mon, 25th Nov 2019 14:59:32 UTC +0000",
+        "From": ["sgibson@glasswallsolutions.com"]
+    }
+
+
 def test_message_attach(mock_open):
     # write a test file to try to attach
     with open("attachment.txt", "w") as test_attachment:
@@ -85,6 +98,22 @@ def test_message_attach(mock_open):
     assert result.get_payload() == expected.get_payload()
 
 
+def test_message_attach_text():
+    msg = Message(to=["test@email.com"],
+                  from_addresses=["test@email.com"],
+                  date=datetime.now())
+    msg.attach_text("Hello, world!")
+
+    expected = MIMEText("Hello, world!")
+
+    result = msg.attachments[0]
+
+    assert result.get_content_type() == expected.get_content_type()
+    assert result.get_content_disposition() == \
+        expected.get_content_disposition()
+    assert result.get_payload() == expected.get_payload()
+
+
 def test_as_mime(mock_open):
     # write a test file to try to attach
     with open("attachment.txt", "w") as test_attachment:
@@ -92,8 +121,8 @@ def test_as_mime(mock_open):
 
     msg = Message(to=["test@email.com"],
                   from_addresses=["test@email.com"],
-                  date=datetime.strptime("2019-11-12T16:48:25.773537",
-                                         "%Y-%m-%dT%H:%M:%S.%f"))
+                  date=datetime.strptime("2019-11-12T15:24:28+00:00",
+                                         "%Y-%m-%dT%H:%M:%S%z"))
     msg.attach("attachment.txt")
 
     # we need to set a boundary for the MIME message as it's not
@@ -101,7 +130,7 @@ def test_as_mime(mock_open):
     boundary = "===============8171060537750829823=="
     expected_str = f"""Content-Type: multipart/mixed; boundary="{boundary}"
 MIME-Version: 1.0
-Date: 2019-11-12T16:48:25.773537
+Date: Tue, 12 Nov 2019 15:24:28 +0000
 To: test@email.com
 From: test@email.com
 

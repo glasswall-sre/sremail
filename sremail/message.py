@@ -5,6 +5,7 @@ import email.message
 from email.message import EmailMessage
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from os import path
 from typing import List
 
@@ -29,7 +30,7 @@ class MessageHeadersSchema(Schema):
     # TODO: add more as they are supported
     # field names here should be able to be converted to the correct MIME header
     # key using mime_headerize()
-    date = fields.DateTime(format="iso", required=True)
+    date = fields.DateTime(format="rfc", required=True)
     sender = AddressField()
     reply_to = fields.List(AddressField())
     to = fields.List(AddressField())
@@ -113,6 +114,64 @@ class Message:
         dumped_headers = MESSAGE_HEADERS_SCHEMA.dump(headers)
         self.headers = dumped_headers
         self.attachments = []
+
+    @classmethod
+    def with_headers(cls, headers: dict) -> Message:
+        """Create a new MIME message with given headers. This allows you to
+        create a message using raw headers.
+
+        Example::
+            msg = Message.with_headers({
+                "To": ["sgibson@glasswallsolutions.com"],
+                "Date": "Mon, 25th Nov 2019 14:59:32 UTC +00:00",
+                "From": ["sgibson@glasswallsolutions.com"]
+            })
+
+        This exists because when creating a message with a constructor it's
+        expecting the headers as kwargs, i.e. Message(to=[...], date="") etc.
+        
+        This comes into the constructor as a dict with keys "to", "date" and so on,
+        and is converted (MIMEified) into MIME headers with keys "To" and "Date"
+        inside the MessageHeadersSchema. Keys here will be expecting Python-native
+        types, for example "date" will be expecting a datetime.
+
+        The limitations of this approach come when you want to let users specify
+        headers in a config file (for example), whereby you are unable to supply 
+        Python-native types, and must do some level of conversion beforehand to 
+        get the user specified header values to play nice with the constructor.
+
+        Instead of doing the conversion, you could just trust the user to put
+        headers in the correct format, supply the raw headers to 
+        Message.with_headers() and be done with it.
+
+        Args:
+            headers (dict): The raw headers to put on the Message.
+
+        Returns:
+            Message: The created Message object.
+        """
+        self = cls.__new__(cls)
+        self.headers = headers
+        self.attachments = []
+        return self
+
+    def attach_text(self, text: str, subtype: str = "plain") -> Message:
+        """Attach some plaintext to the message.
+
+        This method returns the object, so
+        you can chain it like::
+            msg.attach_text("Hello, world!").attach("test.pdf")
+        
+        Args:
+            text (str): The text to attach.
+            subtype (str): The subtype of the text, i.e. "html" for "plain/html".
+
+        Returns:
+            Message: this Message, for chaining.
+        """
+        text_part = MIMEText(text, subtype)
+        self.attachments.append(text_part)
+        return self  # for chaining
 
     def attach(self, file_path: str) -> Message:
         """Attach a file to the message. 

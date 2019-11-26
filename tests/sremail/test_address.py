@@ -32,6 +32,18 @@ def test_address_create(addr, expected, raises):
         assert result == expected
 
 
+@pytest.mark.parametrize(
+    "addr_a, addr_b, expected",
+    [(Address("Sam Gibson <sgibson@glasswallsolutions.com>"),
+      Address("Sam Gibson <sgibson@glasswallsolutions.com>"), True),
+     (Address("Sam Gibson <sgibson@glasswallsolutions.com>"),
+      Address("sgibson@glasswallsolutions.com"), True),
+     (Address("Sam Gibson <sgibson@glasswallsolutions.com>"),
+      Address("different_email@email.com"), False)])
+def test_address_eq(addr_a, addr_b, expected):
+    assert (addr_a == addr_b) == expected
+
+
 def test_address_str():
     address = "Sam Gibson <sgibson@glasswallsolutions.com>"
     result = str(Address(address))

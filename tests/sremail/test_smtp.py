@@ -42,7 +42,7 @@ def test_send_message(mock_smtp, mock_open, capsys):
     boundary = "===============8171060537750829823=="
     expected_str = f"""Content-Type: multipart/mixed; boundary="{boundary}"
 MIME-Version: 1.0
-Date: 2019-11-12T16:48:25.773537
+Date: Tue, 12 Nov 2019 16:48:25 -0000
 To: test@email.com
 From: test@email.com
 
@@ -94,7 +94,7 @@ def test_send_messages(mock_smtp, mock_open, capsys):
     boundary = "===============8171060537750829823=="
     expected_str = f"""Content-Type: multipart/mixed; boundary="{boundary}"
 MIME-Version: 1.0
-Date: 2019-11-12T16:48:25.773537
+Date: Tue, 12 Nov 2019 16:48:25 -0000
 To: test@email.com
 From: test@email.com
 

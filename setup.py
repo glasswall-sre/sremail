@@ -11,7 +11,7 @@ setup(
     dependency_links=[],
     install_requires=["marshmallow"],
     name="sremail",
-    version="0.1.1",
+    version="0.2.1",
     description=
     "Python package to make it easier to send mail to SaaS clusters",
     author="Sam Gibson",
