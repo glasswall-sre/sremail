@@ -151,11 +151,9 @@ class Message:
             Message: The created Message object.
         """
         self = cls.__new__(cls)
-        try:
-            self.headers = MESSAGE_HEADERS_SCHEMA.load(headers)
-        except ValidationError as err:
-            raise ValueError(err.messages)
+        self.headers = headers
         self.attachments = []
+        return self
 
     def attach_text(self, text: str, subtype: str = "plain") -> Message:
         """Attach some plaintext to the message.
