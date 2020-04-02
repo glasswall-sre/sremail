@@ -1,3 +1,4 @@
+import base64
 from contextlib import nullcontext as does_not_raise
 from datetime import datetime
 import email
@@ -9,37 +10,50 @@ import pytest
 from sremail.message import Message, MIMEApplication, MIMEText
 
 
-def create_message(headers: Dict[str, object],
+def create_message(body: str, headers: Dict[str, object],
                    attachments: List[MIMEApplication]) -> Message:
     msg = Message.__new__(Message)
+    msg.body = body
     msg.headers = headers
     msg.attachments = attachments
     return msg
 
 
 @pytest.mark.parametrize(
-    "headers,expected,raises",
-    [({
+    "body,headers,expected,raises",
+    [("", {
         "to": ["test@email.com"],
         "from_addresses": ["person@place.com"],
         "date":
         datetime.strptime("2019-11-12T15:24:28+00:00", "%Y-%m-%dT%H:%M:%S%z")
     },
       create_message(
-          {
+          "", {
               "To": ["test@email.com"],
               "From": ["person@place.com"],
               "Date": "Tue, 12 Nov 2019 15:24:28 +0000"
           }, []), does_not_raise()),
-     ({
+     ("", {
          "from_addresses": ["person@place.com"],
          "date":
          datetime.strptime("2019-11-12T15:24:28+00:00", "%Y-%m-%dT%H:%M:%S%z")
-     }, None, pytest.raises(ValueError))],
-    ids=["Success", "SchemaInvalidation"])
-def test_create_message(headers, expected, raises):
+     }, None, pytest.raises(ValueError)),
+     ("Hello world", {
+         "to": ["test@email.com"],
+         "from_addresses": ["person@place.com"],
+         "date":
+         datetime.strptime("2019-11-12T15:24:28+00:00", "%Y-%m-%dT%H:%M:%S%z")
+     },
+      create_message(
+          "Hello world", {
+              "To": ["test@email.com"],
+              "From": ["person@place.com"],
+              "Date": "Tue, 12 Nov 2019 15:24:28 +0000"
+          }, []), does_not_raise())],
+    ids=["SuccessNoBody", "SchemaInvalidation", "SuccessWithBody"])
+def test_create_message(body, headers, expected, raises):
     with raises:
-        result = Message(**headers)
+        result = Message(body, **headers)
         assert result == expected
 
 
@@ -85,7 +99,7 @@ def test_message_attach(mock_open):
 
     msg.attach("attachment.txt")
 
-    expected = MIMEApplication("TEXT", _subtype="txt")
+    expected = MIMEText("TEXT\n")
     expected.add_header("content-disposition",
                         "attachment",
                         filename="attachment.txt")
@@ -98,13 +112,18 @@ def test_message_attach(mock_open):
     assert result.get_payload() == expected.get_payload()
 
 
-def test_message_attach_text():
+def test_message_attach_stream():
+    byte_stream = io.BytesIO(b"testing testing 123")
+
     msg = Message(to=["test@email.com"],
                   from_addresses=["test@email.com"],
                   date=datetime.now())
-    msg.attach_text("Hello, world!")
+    msg.attach_stream(byte_stream, "test.bin")
 
-    expected = MIMEText("Hello, world!")
+    expected = MIMEApplication(b"testing testing 123")
+    expected.add_header("content-disposition",
+                        "attachment",
+                        filename="test.bin")
 
     result = msg.attachments[0]
 
@@ -119,7 +138,8 @@ def test_as_mime(mock_open):
     with open("attachment.txt", "w") as test_attachment:
         test_attachment.write("TEXT")
 
-    msg = Message(to=["test@email.com"],
+    msg = Message(body="Hello, world!",
+                  to=["test@email.com"],
                   from_addresses=["test@email.com"],
                   date=datetime.strptime("2019-11-12T15:24:28+00:00",
                                          "%Y-%m-%dT%H:%M:%S%z"))
@@ -130,17 +150,21 @@ def test_as_mime(mock_open):
     boundary = "===============8171060537750829823=="
     expected_str = f"""Content-Type: multipart/mixed; boundary="{boundary}"
 MIME-Version: 1.0
-Date: Tue, 12 Nov 2019 15:24:28 +0000
-To: test@email.com
 From: test@email.com
+To: test@email.com
+Date: Tue, 12 Nov 2019 15:24:28 +0000
 
 --{boundary}
-Content-Type: application/txt
-MIME-Version: 1.0
-Content-Transfer-Encoding: base64
-content-disposition: attachment; filename="attachment.txt"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-VEVYVA==
+Hello, world!
+--{boundary}
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="attachment.txt"
+
+TEXT
 
 --{boundary}--
 """
@@ -152,6 +176,7 @@ VEVYVA==
     assert dict(result) == dict(expected)
     result_payload = result.get_payload()[0]
     expected_payload = expected.get_payload()[0]
+    print(result)
     assert result_payload.get_payload() == \
         expected_payload.get_payload()
     assert result_payload.get_content_type() == \

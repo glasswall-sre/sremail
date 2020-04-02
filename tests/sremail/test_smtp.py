@@ -47,12 +47,11 @@ To: test@email.com
 From: test@email.com
 
 --{boundary}
-Content-Type: application/txt
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Transfer-Encoding: base64
 content-disposition: attachment; filename="attachment.txt"
 
-VEVYVA==
+TEXT
 
 --{boundary}--
 """
@@ -99,12 +98,12 @@ To: test@email.com
 From: test@email.com
 
 --{boundary}
-Content-Type: application/txt
+Content-Type: text/plain
 MIME-Version: 1.0
 Content-Transfer-Encoding: base64
 content-disposition: attachment; filename="attachment.txt"
 
-VEVYVA==
+TEXT
 
 --{boundary}--
 """
