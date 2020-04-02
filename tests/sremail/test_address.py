@@ -39,7 +39,9 @@ def test_address_create(addr, expected, raises):
      (Address("Sam Gibson <sgibson@glasswallsolutions.com>"),
       Address("sgibson@glasswallsolutions.com"), True),
      (Address("Sam Gibson <sgibson@glasswallsolutions.com>"),
-      Address("different_email@email.com"), False)])
+      Address("different_email@email.com"), False),
+     (Address("Sam Gibson <sgibson@glasswallsolutions.com>"), "not an address",
+      False)])
 def test_address_eq(addr_a, addr_b, expected):
     assert (addr_a == addr_b) == expected
 

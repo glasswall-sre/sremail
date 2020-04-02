@@ -2,12 +2,14 @@ from __future__ import annotations  # to allow Message to return itself in metho
 
 import datetime
 import email.message
-from email.message import EmailMessage
+from email.message import EmailMessage, MIMEPart
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from io import IOBase
+import mimetypes
 from os import path
-from typing import List
+from typing import List, Union
 
 from marshmallow import Schema, fields, validates_schema, post_dump, pre_dump,\
     ValidationError, INCLUDE
@@ -96,7 +98,7 @@ class Message:
         headers (dict): The headers of the MIME message.
         attachments (List[email.message.Message]): MIME objects attached to the message.
     """
-    def __init__(self, **headers) -> None:
+    def __init__(self, body: str = "", **headers) -> None:
         """Create a message, specifying headers as kwargs.
 
         For example::
@@ -104,6 +106,10 @@ class Message:
 
         Headers kwarg names will be 'MIMEified', for example, 'reply_to' will be
         converted to 'Reply-To'.
+
+        Args:
+            body: The plaintext body of the email.
+            kwargs: The headers.
         """
         # make sure the headers are valid
         validation_result = MESSAGE_HEADERS_SCHEMA.validate(
@@ -113,10 +119,11 @@ class Message:
 
         dumped_headers = MESSAGE_HEADERS_SCHEMA.dump(headers)
         self.headers = dumped_headers
+        self.body = body
         self.attachments = []
 
     @classmethod
-    def with_headers(cls, headers: dict) -> Message:
+    def with_headers(cls, headers: dict, body: str = "") -> Message:
         """Create a new MIME message with given headers. This allows you to
         create a message using raw headers.
 
@@ -152,26 +159,9 @@ class Message:
         """
         self = cls.__new__(cls)
         self.headers = headers
+        self.body = body
         self.attachments = []
         return self
-
-    def attach_text(self, text: str, subtype: str = "plain") -> Message:
-        """Attach some plaintext to the message.
-
-        This method returns the object, so
-        you can chain it like::
-            msg.attach_text("Hello, world!").attach("test.pdf")
-        
-        Args:
-            text (str): The text to attach.
-            subtype (str): The subtype of the text, i.e. "html" for "plain/html".
-
-        Returns:
-            Message: this Message, for chaining.
-        """
-        text_part = MIMEText(text, subtype)
-        self.attachments.append(text_part)
-        return self  # for chaining
 
     def attach(self, file_path: str) -> Message:
         """Attach a file to the message. 
@@ -187,14 +177,39 @@ class Message:
             Message: this Message, for chaining.
         """
         with open(file_path, "rb") as attachment_file:
-            ext = file_path.split(".")[-1:][0]
-            mime_attachment = MIMEApplication(attachment_file.read(),
-                                              _subtype=ext)
-            mime_attachment.add_header("content-disposition",
-                                       "attachment",
-                                       filename=path.basename(file_path))
-            self.attachments.append(mime_attachment)
-        return self  # for chaining
+            return self.attach_stream(attachment_file, file_path)
+
+    def attach_stream(self, stream: IOBase, file_name: str) -> Message:
+        """Read a stream into an attachment and attach to this message.
+
+        This method returns the object, so
+        you can chain it like::
+            msg.attach(file_handle, "test.txt").attach(byte_stream, "test.bin")
+
+        Args:
+            stream (IOBase): The stream to read from.
+            file_name (str): The name of the file, used for MIME type identification.
+
+        Returns:
+            Message: this Message, for chaining.
+        """
+        mime_type = mimetypes.guess_type(file_name)[0]
+        main_type, sub_type = mime_type.split("/")
+        attachment = MIMEPart()
+
+        # we need special handling for set_content with datatype of str, as
+        # for some reason this method doesn't like 'maintype'
+        # see: https://docs.python.org/3/library/email.contentmanager.html#email.contentmanager.set_content
+        content_args = {"subtype": sub_type}
+        if main_type != "text":
+            content_args["maintype"] = main_type
+        file_name = path.basename(file_name)
+        attachment.set_content(stream.read(),
+                               filename=file_name,
+                               disposition="attachment",
+                               **content_args)
+        self.attachments.append(attachment)
+        return self
 
     def as_mime(self) -> email.message.Message:
         """Get this message as a Python standard library Message object.
@@ -212,12 +227,19 @@ class Message:
                 val = joined_list
             mime_message[key] = val
 
+        # add the body if it exists
+        if self.body:
+            mime_message.attach(MIMEText(self.body))
+
+        # now the attachments
         for attachment in self.attachments:
             mime_message.attach(attachment)
+
         return mime_message
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self.headers == other.headers and sorted(
+            return self.body == other.body and \
+                self.headers == other.headers and sorted(
                 self.attachments) == sorted(other.attachments)
         return False
