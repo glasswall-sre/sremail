@@ -15,6 +15,7 @@ from marshmallow import Schema, fields, validates_schema, post_dump, pre_dump,\
     ValidationError, INCLUDE
 
 from .address import Address, AddressField
+from .email_date_field import EmailDate
 
 
 def mime_headerize(s: str) -> str:
@@ -32,7 +33,7 @@ class MessageHeadersSchema(Schema):
     # TODO: add more as they are supported
     # field names here should be able to be converted to the correct MIME header
     # key using mime_headerize()
-    date = fields.DateTime(format="rfc", required=True)
+    date = EmailDate(required=True)
     sender = AddressField()
     reply_to = fields.List(AddressField())
     to = fields.List(AddressField())
@@ -101,6 +102,8 @@ class Message:
     def __init__(self, body: str = "", **headers) -> None:
         """Create a message, specifying headers as kwargs.
 
+        MUST use headers ('to' OR 'bcc') AND 'date' AND 'from_addresses'.
+
         For example::
             Message(to=["a@b.com"], date=datetime.now(), from_addresses=["c@d.com"])
 
@@ -117,8 +120,7 @@ class Message:
         if len(validation_result) > 0:
             raise ValueError(validation_result)
 
-        dumped_headers = MESSAGE_HEADERS_SCHEMA.dump(headers)
-        self.headers = dumped_headers
+        self.headers = headers
         self.body = body
         self.attachments = []
 
@@ -127,10 +129,12 @@ class Message:
         """Create a new MIME message with given headers. This allows you to
         create a message using raw headers.
 
+        MUST use headers ('To' OR 'Bcc') AND 'Date' AND 'From'.
+
         Example::
             msg = Message.with_headers({
                 "To": ["sgibson@glasswallsolutions.com"],
-                "Date": "Mon, 25th Nov 2019 14:59:32 UTC +00:00",
+                "Date": datetime.now(),
                 "From": ["sgibson@glasswallsolutions.com"]
             })
 
@@ -153,6 +157,7 @@ class Message:
 
         Args:
             headers (dict): The raw headers to put on the Message.
+            body (str): The body of the Message.
 
         Returns:
             Message: The created Message object.
@@ -220,7 +225,8 @@ class Message:
         mime_message = email.message.Message()
         mime_message.add_header("Content-Type", "multipart/mixed")
         mime_message.add_header("MIME-Version", "1.0")
-        for key, val in self.headers.items():
+        dumped_headers = MESSAGE_HEADERS_SCHEMA.dump(self.headers)
+        for key, val in dumped_headers.items():
             # make sure lists are joined up with commas
             if isinstance(val, list):
                 joined_list = ", ".join(val)

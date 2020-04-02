@@ -29,9 +29,9 @@ def create_message(body: str, headers: Dict[str, object],
     },
       create_message(
           "", {
-              "To": ["test@email.com"],
-              "From": ["person@place.com"],
-              "Date": "Tue, 12 Nov 2019 15:24:28 +0000"
+              "to": ["test@email.com"],
+              "from_addresses": ["person@place.com"],
+              "date": datetime.strptime("2019-11-12T15:24:28+00:00", "%Y-%m-%dT%H:%M:%S%z")
           }, []), does_not_raise()),
      ("", {
          "from_addresses": ["person@place.com"],
@@ -46,14 +46,15 @@ def create_message(body: str, headers: Dict[str, object],
      },
       create_message(
           "Hello world", {
-              "To": ["test@email.com"],
-              "From": ["person@place.com"],
-              "Date": "Tue, 12 Nov 2019 15:24:28 +0000"
+              "to": ["test@email.com"],
+              "from_addresses": ["person@place.com"],
+              "date": datetime.strptime("2019-11-12T15:24:28+00:00", "%Y-%m-%dT%H:%M:%S%z")
           }, []), does_not_raise())],
     ids=["SuccessNoBody", "SchemaInvalidation", "SuccessWithBody"])
 def test_create_message(body, headers, expected, raises):
     with raises:
         result = Message(body, **headers)
+        print(result.headers)
         assert result == expected
 
 
@@ -78,12 +79,12 @@ def test_add_header():
 def test_with_headers():
     result = Message.with_headers({
         "To": ["sgibson@glasswallsolutions.com"],
-        "Date": "Mon, 25th Nov 2019 14:59:32 UTC +0000",
+        "Date": "Mon, 25 Nov 2019 14:59:32 UTC +0000",
         "From": ["sgibson@glasswallsolutions.com"]
     })
     assert result.headers == {
         "To": ["sgibson@glasswallsolutions.com"],
-        "Date": "Mon, 25th Nov 2019 14:59:32 UTC +0000",
+        "Date": "Mon, 25 Nov 2019 14:59:32 UTC +0000",
         "From": ["sgibson@glasswallsolutions.com"]
     }
 
