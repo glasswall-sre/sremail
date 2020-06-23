@@ -18,6 +18,7 @@ pytest-azurepipelines = "*"
 [packages]
 marshmallow = "*"
 sremail = {editable = true,path = "."}
+aiosmtplib = "*"
 
 [requires]
 python_version = "3.7"
