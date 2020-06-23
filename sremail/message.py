@@ -216,13 +216,13 @@ class Message:
         self.attachments.append(attachment)
         return self
 
-    def as_mime(self) -> email.message.Message:
+    def as_mime(self) -> email.message.EmailMessage:
         """Get this message as a Python standard library Message object.
 
         Returns:
-            email.message.Message
+            email.message.EmailMessage
         """
-        mime_message = email.message.Message()
+        mime_message = email.message.EmailMessage()
         mime_message.add_header("Content-Type", "multipart/mixed")
         mime_message.add_header("MIME-Version", "1.0")
         dumped_headers = MESSAGE_HEADERS_SCHEMA.dump(self.headers)
