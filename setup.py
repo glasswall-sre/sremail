@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 setup(
     dependency_links=[],
-    install_requires=["marshmallow"],
+    install_requires=["marshmallow", "aiosmtplib"],
     name="sremail",
     version="#{TAG_NAME}#",
     description=
