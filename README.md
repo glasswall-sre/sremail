@@ -1,5 +1,10 @@
 # sremail
 
+![License](https://img.shields.io/github/license/glasswall-sre/sremail)
+![Coverage](https://img.shields.io/codecov/c/github/glasswall-sre/sremail)
+![Version](https://img.shields.io/pypi/v/sremail)
+
+
 'SRE Mail' is a Python package designed to make sending email in MIME 
 format a lot easier.
 
