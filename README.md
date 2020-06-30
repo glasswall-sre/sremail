@@ -1,7 +1,7 @@
 # sremail
 
-'SRE Mail' is a Python package designed to make sending email to SaaS in MIME 
-format to the different clusters a lot easier.
+'SRE Mail' is a Python package designed to make sending email in MIME 
+format a lot easier.
 
 ## Basic usage
 
@@ -31,11 +31,11 @@ smtp.send(msg, "smtp.some_server.com:25")
 ## Development
 
 ### Prerequisites
-- Python 3.7
+- Python 3.6+
 - Pipenv
 
 ### Quick start
 1. Clone this repo.
-2. Run `pipenv sync`.
+2. Run `pipenv sync --dev`.
 3. You're good to go. You can run commands using the package inside a
    `pipenv shell`, and modify the code with your IDE.
