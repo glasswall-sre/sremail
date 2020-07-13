@@ -199,7 +199,14 @@ class Message:
             Message: this Message, for chaining.
         """
         mime_type = mimetypes.guess_type(file_name)[0]
-        main_type, sub_type = mime_type.split("/")
+
+        # it's possible we get a file that doesn't have a mime type, like a
+        # Linux executable, or a mach-o file - in that case just set it
+        # to octet-stream as a generic stream of bytes
+        if mime_type is None:
+            main_type, sub_type = ("application", "octet-stream")
+        else:
+            main_type, sub_type = mime_type.split("/")
         attachment = MIMEPart()
 
         # we need special handling for set_content with datatype of str, as
