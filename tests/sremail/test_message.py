@@ -31,7 +31,9 @@ def create_message(body: str, headers: Dict[str, object],
           "", {
               "to": ["test@email.com"],
               "from_addresses": ["person@place.com"],
-              "date": datetime.strptime("2019-11-12T15:24:28+00:00", "%Y-%m-%dT%H:%M:%S%z")
+              "date":
+              datetime.strptime("2019-11-12T15:24:28+00:00",
+                                "%Y-%m-%dT%H:%M:%S%z")
           }, []), does_not_raise()),
      ("", {
          "from_addresses": ["person@place.com"],
@@ -48,7 +50,9 @@ def create_message(body: str, headers: Dict[str, object],
           "Hello world", {
               "to": ["test@email.com"],
               "from_addresses": ["person@place.com"],
-              "date": datetime.strptime("2019-11-12T15:24:28+00:00", "%Y-%m-%dT%H:%M:%S%z")
+              "date":
+              datetime.strptime("2019-11-12T15:24:28+00:00",
+                                "%Y-%m-%dT%H:%M:%S%z")
           }, []), does_not_raise())],
     ids=["SuccessNoBody", "SchemaInvalidation", "SuccessWithBody"])
 def test_create_message(body, headers, expected, raises):
@@ -125,6 +129,27 @@ def test_message_attach_stream():
     expected.add_header("content-disposition",
                         "attachment",
                         filename="test.bin")
+
+    result = msg.attachments[0]
+
+    assert result.get_content_type() == expected.get_content_type()
+    assert result.get_content_disposition() == \
+        expected.get_content_disposition()
+    assert result.get_payload() == expected.get_payload()
+
+
+def test_message_attach_stream_unknown_mime():
+    byte_stream = io.BytesIO(b"testing testing 123")
+
+    msg = Message(to=["test@email.com"],
+                  from_addresses=["test@email.com"],
+                  date=datetime.now())
+    msg.attach_stream(byte_stream, "test.coff")
+
+    expected = MIMEApplication(b"testing testing 123")
+    expected.add_header("content-disposition",
+                        "attachment",
+                        filename="test.coff")
 
     result = msg.attachments[0]
 
