@@ -26,9 +26,9 @@ jobs:
 #       - name: Lint with pylint
 #         run: |
 #           pipenv run pylint sremail --disable="C,W,R"
-      - name: Test with pytest
-        run: |
-          pipenv run pytest tests/ --cov sremail --cov-report term-missing
+#       - name: Test with pytest
+#         run: |
+#           pipenv run pytest tests/ --cov sremail --cov-report term-missing
 
   sonarcloud:
     runs-on: ubuntu-latest
