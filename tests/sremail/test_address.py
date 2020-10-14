@@ -1,3 +1,6 @@
+"""
+Address test module
+"""
 from contextlib import nullcontext as does_not_raise
 
 import pytest
@@ -6,6 +9,15 @@ from sremail.address import Address
 
 
 def create_address(email: str, name: str) -> Address:
+    """
+
+    Args:
+        email: email address string
+        name: name of email recipient
+
+    Returns:
+        addr: Address object
+    """
     addr = Address.__new__(Address)
     addr.email = email
     addr.name = name
@@ -27,6 +39,16 @@ def create_address(email: str, name: str) -> Address:
                              "Bad address", "Bad email"
                          ])
 def test_address_create(addr, expected, raises):
+    """
+
+    Args:
+        addr: email address
+        expected: Address object
+        raises: error type
+
+    Returns:
+        boolean in response to the object being created or not (True or False)
+    """
     with raises:
         result = Address(addr)
         assert result == expected
@@ -43,6 +65,16 @@ def test_address_create(addr, expected, raises):
      (Address("Sam Gibson <sgibson@glasswallsolutions.com>"), "not an address",
       False)])
 def test_address_eq(addr_a, addr_b, expected):
+    """
+
+    Args:
+        addr_a: email address
+        addr_b: email address
+        expected: boolean
+
+    Returns:
+        boolean value after assessing for equality
+    """
     assert (addr_a == addr_b) == expected
 
 

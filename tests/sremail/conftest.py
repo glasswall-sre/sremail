@@ -1,3 +1,6 @@
+"""
+configuration for tests
+"""
 import builtins
 import contextlib
 import io
