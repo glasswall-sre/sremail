@@ -19,7 +19,7 @@ def connect(smtp_url: str, timeout: Optional[float] = None) -> smtplib.SMTP:
 
     Args:
         smtp_url (str): The SMTP server URL.
-        timeout (float): The connection timeout in seconds. If not specified, 
+        timeout (float): The connection timeout in seconds. If not specified,
             the system default timeout will be used.
     """
     return smtplib.SMTP(smtp_url, timeout=timeout)
@@ -31,7 +31,7 @@ async def connect_async(smtp_url,
 
     Args:
         smtp_url (str): The SMTP server URL.
-        timeout (float): The connection timeout in seconds. If not specified, 
+        timeout (float): The connection timeout in seconds. If not specified,
             the system default timeout will be used.
     """
     return await aiosmtplib.SMTP(smtp_url, timeout=timeout)

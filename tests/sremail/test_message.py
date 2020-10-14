@@ -1,3 +1,6 @@
+"""
+Message test module
+"""
 import base64
 from contextlib import nullcontext as does_not_raise
 from datetime import datetime
@@ -12,6 +15,16 @@ from sremail.message import Message, MIMEApplication, MIMEText
 
 def create_message(body: str, headers: Dict[str, object],
                    attachments: List[MIMEApplication]) -> Message:
+    """
+
+    Args:
+        body: message body
+        headers: message headers
+        attachments:email file attachment
+
+    Returns: formatted msg
+
+    """
     msg = Message.__new__(Message)
     msg.body = body
     msg.headers = headers

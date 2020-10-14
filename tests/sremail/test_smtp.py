@@ -1,3 +1,6 @@
+"""
+smtp test module
+"""
 from datetime import datetime
 import email
 import smtplib

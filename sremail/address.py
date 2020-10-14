@@ -1,3 +1,11 @@
+"""Address Class, AddressField
+
+Store an email address, as in a MIME file
+A marshmallow field for de/serialisation of Address objects
+
+Author:
+    Sam Gibson <sgibson@glasswallsolutions.com>
+"""
 from typing import Optional
 
 from marshmallow import fields, validate, ValidationError
@@ -16,7 +24,8 @@ class Address:
         """Create a new address from a string.
 
         Args:
-            addr_str (str): The address. Can be "email@test.com", or "Firstname Lastname <email@test.com>"
+            addr_str (str): The address. Can be "email@test.com",
+            or "Firstname Lastname <email@test.com>"
 
         Raises:
             ValueError: If addr_str was in an incorrect format.

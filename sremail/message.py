@@ -1,3 +1,10 @@
+"""mime_headerize, MessageHeadersSchema, Meta
+
+Creation of MIME message
+
+Author:
+    Sam Gibson <sgibson@glasswallsolutions.com>
+"""
 from __future__ import annotations  # to allow Message to return itself in methods...
 
 import datetime
@@ -49,6 +56,9 @@ class MessageHeadersSchema(Schema):
         # the from field here and alias it to attribute 'from_addresses'
         # meaning when creating a message you need to specify 'from' as
         # kwarg 'from_addresses'
+        """
+        workround class to handle From field
+        """
         include = {
             "from":
             fields.List(AddressField(),
@@ -140,19 +150,19 @@ class Message:
 
         This exists because when creating a message with a constructor it's
         expecting the headers as kwargs, i.e. Message(to=[...], date="") etc.
-        
+
         This comes into the constructor as a dict with keys "to", "date" and so on,
         and is converted (MIMEified) into MIME headers with keys "To" and "Date"
         inside the MessageHeadersSchema. Keys here will be expecting Python-native
         types, for example "date" will be expecting a datetime.
 
         The limitations of this approach come when you want to let users specify
-        headers in a config file (for example), whereby you are unable to supply 
-        Python-native types, and must do some level of conversion beforehand to 
+        headers in a config file (for example), whereby you are unable to supply
+        Python-native types, and must do some level of conversion beforehand to
         get the user specified header values to play nice with the constructor.
 
         Instead of doing the conversion, you could just trust the user to put
-        headers in the correct format, supply the raw headers to 
+        headers in the correct format, supply the raw headers to
         Message.with_headers() and be done with it.
 
         Args:
@@ -169,8 +179,8 @@ class Message:
         return self
 
     def attach(self, file_path: str) -> Message:
-        """Attach a file to the message. 
-        
+        """Attach a file to the message.
+
         This method returns the object, so
         you can chain it like::
             msg.attach("file.pdf").attach("test.txt").attach("word.doc")
