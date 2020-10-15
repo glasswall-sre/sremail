@@ -15,7 +15,7 @@ def mock_open(monkeypatch):
     files = {}
 
     @contextlib.contextmanager
-    def mocked_open(filename, *args, **kwargs):
+    def mocked_open(filename):
         file = io.StringIO(files.get(filename, ""))
         try:
             yield file

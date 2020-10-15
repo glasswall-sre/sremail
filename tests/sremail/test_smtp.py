@@ -13,11 +13,23 @@ from sremail import smtp
 
 @pytest.fixture
 def mock_smtp(monkeypatch):
+    """
+
+    Args:
+        monkeypatch:
+
+    Returns:
+        monkeypatch: Object
+    """
     class MockSMTP:
+        """
+        Creates a mock smtp
+        """
         def __init__(self, *args, **kwargs):
             pass
 
-        def send_message(self, message):
+        @staticmethod
+        def send_message(message):
             print(message)
 
         def __enter__(self):
@@ -30,6 +42,16 @@ def mock_smtp(monkeypatch):
 
 
 def test_send_message(mock_smtp, mock_open, capsys):
+    """
+
+    Args:
+        mock_smtp:
+        mock_open:
+        capsys:
+
+    Returns:
+
+    """
     # write a test file to try to attach
     with open("attachment.txt", "w") as test_attachment:
         test_attachment.write("TEXT")

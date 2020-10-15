@@ -69,6 +69,17 @@ def create_message(body: str, headers: Dict[str, object],
           }, []), does_not_raise())],
     ids=["SuccessNoBody", "SchemaInvalidation", "SuccessWithBody"])
 def test_create_message(body, headers, expected, raises):
+    """
+
+    Args:
+        body: message body
+        headers: message headers
+        expected: expected result
+        raises: error check
+
+    Returns:
+        boolean
+    """
     with raises:
         result = Message(body, **headers)
         print(result.headers)
@@ -76,6 +87,11 @@ def test_create_message(body, headers, expected, raises):
 
 
 def test_create_message_unknown_headers():
+    """
+    creates a message with unknown or unrecognised headers
+    Returns:
+        boolean
+    """
     result = Message(to=["test@email.com"],
                      from_addresses=["a@b.com"],
                      date=datetime.now(),
@@ -85,6 +101,11 @@ def test_create_message_unknown_headers():
 
 
 def test_add_header():
+    """
+    Adds a header
+    Returns:
+        boolean on assertion that the header gets added successfully
+    """
     result = Message(to=["test@email.com"],
                      from_addresses=["a@b.com"],
                      date=datetime.now())
@@ -94,6 +115,11 @@ def test_add_header():
 
 
 def test_with_headers():
+    """
+    compares two input string for equality
+    Returns:
+        None
+    """
     result = Message.with_headers({
         "To": ["sgibson@glasswallsolutions.com"],
         "Date": "Mon, 25 Nov 2019 14:59:32 UTC +0000",
@@ -107,6 +133,14 @@ def test_with_headers():
 
 
 def test_message_attach(mock_open):
+    """
+    tests a attachment attempt on a message
+    Args:
+        mock_open: dictionary
+
+    Returns:
+        boolean from assertions
+    """
     # write a test file to try to attach
     with open("attachment.txt", "w") as test_attachment:
         test_attachment.write("TEXT")
@@ -131,6 +165,11 @@ def test_message_attach(mock_open):
 
 
 def test_message_attach_stream():
+    """
+    tests for a message attachment stream
+    Returns:
+        boolean from assertions
+    """
     byte_stream = io.BytesIO(b"testing testing 123")
 
     msg = Message(to=["test@email.com"],
@@ -152,6 +191,11 @@ def test_message_attach_stream():
 
 
 def test_message_attach_stream_unknown_mime():
+    """
+        tests for a message attachment stream for an unknown mime
+        Returns:
+            boolean from assertions
+        """
     byte_stream = io.BytesIO(b"testing testing 123")
 
     msg = Message(to=["test@email.com"],
@@ -173,6 +217,14 @@ def test_message_attach_stream_unknown_mime():
 
 
 def test_as_mime(mock_open):
+    """
+    creates and attaches a test file
+    Args:
+        mock_open: dictionary
+
+    Returns:
+        Runs assertions. Also prints out a result
+    """
     # write a test file to try to attach
     with open("attachment.txt", "w") as test_attachment:
         test_attachment.write("TEXT")
