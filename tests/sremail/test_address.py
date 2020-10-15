@@ -79,12 +79,22 @@ def test_address_eq(addr_a, addr_b, expected):
 
 
 def test_address_str():
+    """
+    tests for a correctly formatted email address
+    Returns:
+        boolean
+    """
     address = "Sam Gibson <sgibson@glasswallsolutions.com>"
     result = str(Address(address))
     assert result == address
 
 
 def test_address_repr():
+    """
+        tests for a correctly formatted email address
+        Returns:
+            boolean
+        """
     address = "Sam Gibson <sgibson@glasswallsolutions.com>"
     result = Address(address).__repr__()
     assert result == f"address.Address(\"{address}\")"

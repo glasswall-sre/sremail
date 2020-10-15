@@ -7,31 +7,28 @@ Author:
 """
 from __future__ import annotations  # to allow Message to return itself in methods...
 
-import datetime
 import email.message
-from email.message import EmailMessage, MIMEPart
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
+from email.message import MIMEPart
 from email.mime.text import MIMEText
 from io import IOBase
 import mimetypes
 from os import path
-from typing import List, Union
+from typing import List
 
 from marshmallow import Schema, fields, validates_schema, post_dump, pre_dump,\
     ValidationError, INCLUDE
 
-from .address import Address, AddressField
+from .address import AddressField
 from .email_date_field import EmailDate
 
 
-def mime_headerize(s: str) -> str:
+def mime_headerize(snake_case_val: str) -> str:
     """Convert a snake_cased string into a MIME header key.
 
     For example:
         reply_to -> Reply-To
     """
-    parts = iter(s.split("_"))
+    parts = iter(snake_case_val.split("_"))
     return "-".join(i.title() for i in parts)
 
 
@@ -71,30 +68,31 @@ class MessageHeadersSchema(Schema):
         """Convert data keys from snake_case to Mime-Header format."""
         field_obj.data_key = mime_headerize(field_obj.data_key or field_name)
 
+    @staticmethod
     @validates_schema
-    def validate_mandatory_fields(self, data, **kwargs):
+    def validate_mandatory_fields(data):
         """Used for validating fields against each other."""
         if not data.get("to") and not data.get("bcc"):
             raise ValidationError("One of 'to', or 'bcc' must be supplied")
 
     @pre_dump()
-    def cache_unknown_fields(self, data, **kwargs):
+    def cache_unknown_fields(self, data):
         """Cache any fields that were unknown, so we can dump them later on."""
         field_names = [
             field.attribute or field.name for field in self.fields.values()
         ]
         self.cached_unknown_fields.clear()
-        for k, v in data.items():
-            if k not in field_names:
-                self.cached_unknown_fields[k] = v
+        for key, value in data.items():
+            if key not in field_names:
+                self.cached_unknown_fields[key] = value
         return data
 
     @post_dump()
-    def dump_unknown_fields(self, data, **kwargs):
+    def dump_unknown_fields(self, data):
         """Add the unknown fields to the dumped output."""
-        for k, v in self.cached_unknown_fields.items():
-            new_key = mime_headerize(k)
-            data[new_key] = v
+        for key, value in self.cached_unknown_fields.items():
+            new_key = mime_headerize(key)
+            data[new_key] = value
         return data
 
 
@@ -221,7 +219,8 @@ class Message:
 
         # we need special handling for set_content with datatype of str, as
         # for some reason this method doesn't like 'maintype'
-        # see: https://docs.python.org/3/library/email.contentmanager.html#email.contentmanager.set_content
+        # see: https://docs.python.org/3/library/
+        # email.contentmanager.html#email.contentmanager.set_content
         content_args = {"subtype": sub_type}
         if main_type != "text":
             content_args["maintype"] = main_type

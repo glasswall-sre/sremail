@@ -7,10 +7,8 @@ Author:
     Sam Gibson <sgibson@glasswallsolutions.com>
 """
 from typing import Optional
-
-from marshmallow import fields, validate, ValidationError
-
 from email.utils import parseaddr, formataddr
+from marshmallow import fields
 
 
 class Address:
